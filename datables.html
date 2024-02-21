@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zadanie DataTables</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        
+            display: flex;
+            flex-direction: column; 
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(45deg,red,blue,yellow,green);
+            background-size: 400% 400%;
+            animation: gradientAnimation 10s ease infinite;
+        }
+
+        @keyframes gradientAnimation {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+
+        }
+
+        #userTable_wrapper {
+            background-color: rgba(255, 255, 255, 0.8); 
+            padding: 20px;
+            border-radius: 10px;
+           
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); 
+        }
+
+        th, td {
+            padding: 10px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: black;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); 
+        }
+
+        .dataTables_filter label {
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Losowe osoby</h1>
+    <div id="userTable_wrapper" class="dataTables_wrapper">
+        <table id="userTable" class="display" style="width:100%">
+         
+            <thead>
+                <tr>
+                    <th>Imię i nazwisko</th>
+                    <th>Email</th>
+                    <th>Płeć</th>
+                    <th>Wiek</th>
+                    <th>Lokalizacja</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            axios.get('https://randomuser.me/api/?results=100')
+                .then(function(response) {
+                    var usersData = response.data.results.map(function(user) {
+                        return {
+                            "name": {
+                                "first": user.name.first,
+                                "last": user.name.last
+                            },
+                            "email": user.email,
+                            "gender": user.gender,
+                            "dob": {
+                                "age": user.dob.age
+                            },
+                            "location": {
+                                "city": user.location.city,
+                                "country": user.location.country
+                            }
+                        };
+                    });
+
+                    $('#userTable').DataTable({
+                        "language": {
+                            "search": "Szukaj",
+                            "lengthMenu": "Pokaż _MENU_ pozycji",
+                            "info": "Wyświetlono _START_ do _END_ z _TOTAL_ pozycji",
+                            "paginate": {
+                                "first": "Pierwsza",
+                                "last": "Ostatnia",
+                                "next": "Następna",
+                                "previous": "Poprzednia"
+                            }
+                        },
+                        "data": usersData,
+                        "columns": [
+                            { "data": "name",
+                              "render": function(data, type, row, meta) {
+                                  return data.first + ' ' + data.last;
+                              }
+                            },
+                            { "data": "email" },
+                            { "data": "gender",
+                              "render": function(data, type, row, meta) {
+                                  return data === 'male' ? 'Mężczyzna' : 'Kobieta';
+                              }
+                            },
+                            { "data": "dob.age" },
+                            { "data": "location",
+                              "render": function(data, type, row, meta) {
+                                  return data.city + ', ' + data.country;
+                              }
+                            }
+                        ],
+                        "paging": true,
+                        "lengthMenu": [10, 25, 50, 100],
+                        "searching": true,
+                        "info": true,
+                        "order": [[0, 'asc']]
+                    });
+                })
+                .catch(function(error) {
+                    console.error('Błąd pobierania danych:', error);
+                });
+        });
+    </script>
+</body>
+</html>
